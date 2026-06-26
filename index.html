@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a7a4a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stok Buah">
+<title>🍓 Stok Buah Jus</title>
+<link rel="manifest" href="./manifest.json">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #1a7a4a; --green-dark: #145c38; --red: #c0392b; --red-bg: #fce8e6;
+  --amber: #d68910; --amber-bg: #fef9c3; --text: #1a1a1a; --muted: #666;
+  --bg: #f0f4f1; --card: #ffffff; --border: #e0e5e2; --r: 14px; --rs: 10px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); overscroll-behavior: none; }
+.header { background: var(--green); padding: calc(env(safe-area-inset-top) + 14px) 16px 0; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+.header-top { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; }
+.header-top h1 { font-size: 19px; font-weight: 700; color: #fff; flex: 1; }
+.header-top h1 small { font-size: 12px; font-weight: 400; opacity: 0.8; display: block; }
+.notif-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
+.notif-dot { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #ff4444; border-radius: 50%; border: 1.5px solid var(--green); display: none; }
+.notif-dot.show { display: block; }
+.tabs { display: flex; }
+.tab { flex: 1; padding: 11px 6px 10px; font-size: 13px; border: none; background: transparent; color: rgba(255,255,255,0.6); cursor: pointer; border-bottom: 3px solid transparent; font-weight: 500; transition: all 0.15s; font-family: inherit; }
+.tab.active { color: #fff; border-bottom-color: #fff; }
+.content { padding: 14px; max-width: 520px; margin: 0 auto; }
+.panel { display: none; }
+.panel.active { display: block; }
+.alert { background: var(--red-bg); border: 1.5px solid #f5b7b1; border-radius: var(--rs); padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--red); margin-bottom: 12px; display: none; line-height: 1.5; }
+.alert.show { display: block; }
+.card { background: var(--card); border-radius: var(--r); border: 1px solid var(--border); padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+.card-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.fg label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+.fr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+input, select { font-size: 16px; padding: 11px 13px; border: 1.5px solid var(--border); border-radius: var(--rs); background: #fff; color: var(--text); width: 100%; -webkit-appearance: none; font-family: inherit; transition: border-color 0.15s; }
+input:focus, select:focus { outline: none; border-color: var(--green); }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+.btn-save { width: 100%; padding: 14px; border-radius: var(--rs); background: var(--green); color: #fff; border: none; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 3px 10px rgba(26,122,74,0.35); transition: all 0.15s; margin-top: 4px; }
+.btn-save:active { background: var(--green-dark); transform: scale(0.98); }
+.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 12px; }
+.stat { background: var(--card); border-radius: var(--rs); padding: 10px 6px; text-align: center; border: 1px solid var(--border); }
+.stat-n { font-size: 26px; font-weight: 800; line-height: 1; }
+.stat-n.g { color: var(--green); } .stat-n.a { color: var(--amber); } .stat-n.r { color: var(--red); }
+.stat-l { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.search-row input { flex: 1; font-size: 15px; padding: 10px 12px; }
+.search-row select { width: auto; flex-shrink: 0; font-size: 13px; padding: 10px 28px 10px 10px; }
+.item { background: var(--card); border-radius: var(--r); border: 1.5px solid var(--border); padding: 13px 14px; margin-bottom: 8px; position: relative; }
+.item.r { border-color: var(--red); background: #fff9f9; }
+.item.a { border-color: #f0c060; background: #fffef5; }
+.item.g { border-color: #8fcca0; }
+.item-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.item-nama { font-size: 17px; font-weight: 800; }
+.item-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.badge { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-left: 8px; }
+.br { background: var(--red); color: #fff; } .ba { background: var(--amber); color: #fff; } .bg { background: var(--green); color: #fff; }
+.item-sisa { font-size: 14px; font-weight: 700; margin-top: 7px; }
+.item-sisa.r { color: var(--red); } .item-sisa.a { color: var(--amber); } .item-sisa.g { color: var(--green); }
+.item-dates { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin-top: 5px; }
+.item-dates strong { color: var(--text); }
+.item-note { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 4px; }
+.del { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; color: #d0d0d0; cursor: pointer; padding: 2px 6px; line-height: 1; }
+.del:active { color: var(--red); }
+.empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+.empty-ico { font-size: 52px; margin-bottom: 12px; }
+.empty p { font-size: 14px; line-height: 1.6; }
+.exp-card { background: var(--card); border-radius: var(--r); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
+.exp-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.exp-card p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 12px; }
+.btn-exp { width: 100%; padding: 13px; border-radius: var(--rs); border: 1.5px solid var(--border); background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-exp.red { color: var(--red); border-color: #f5b7b1; }
+.install-card { background: #e8f5e9; border: 1.5px solid #a5d6a7; border-radius: var(--r); padding: 16px; margin-bottom: 12px; }
+.install-card h3 { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+.install-card p { font-size: 13px; color: #2e7d32; line-height: 1.8; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.overlay.show { opacity: 1; pointer-events: all; }
+.modal { background: #fff; border-radius: 22px 22px 0 0; padding: 20px 18px calc(env(safe-area-inset-bottom) + 20px); width: 100%; max-width: 500px; transform: translateY(100%); transition: transform 0.25s; }
+.overlay.show .modal { transform: translateY(0); }
+.modal h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.modal p { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-btns button { padding: 14px; border-radius: var(--rs); border: 1.5px solid var(--border); font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; background: #fff; }
+.modal-btns .mbr { background: var(--red); color: #fff; border-color: var(--red); }
+.toast { position: fixed; bottom: calc(env(safe-area-inset-bottom) + 24px); left: 50%; transform: translateX(-50%) translateY(16px); background: #1a1a1a; color: #fff; padding: 12px 22px; border-radius: 100px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.22s; pointer-events: none; white-space: nowrap; z-index: 200; max-width: 88vw; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.install-banner { background: var(--green); color: #fff; padding: 12px 16px; display: none; font-size: 13px; font-weight: 500; align-items: center; gap: 10px; }
+.install-banner.show { display: flex; }
+.install-banner span { flex: 1; }
+.install-banner button { background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); color: #fff; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.close-btn { background: none !important; border: none !important; color: rgba(255,255,255,0.7) !important; font-size: 20px !important; padding: 0 4px !important; cursor: pointer; }
+@media(max-width:360px){ .stats{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body>
+<div class="install-banner" id="install-banner">
+  <span>📲 Install sebagai aplikasi di HP kamu!</span>
+  <button onclick="installApp()">Install</button>
+  <button class="close-btn" onclick="document.getElementById('install-banner').classList.remove('show')">✕</button>
+</div>
+<div class="header">
+  <div class="header-top">
+    <h1>🍓 Stok Buah Jus <small>Manajemen Buah Freezer</small></h1>
+    <button class="notif-btn" onclick="switchTab('stok')">🔔<span class="notif-dot" id="notif-dot"></span></button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('input')">➕ Input</button>
+    <button class="tab" onclick="switchTab('stok')">🧊 Stok</button>
+    <button class="tab" onclick="switchTab('ekspor')">📤 Ekspor</button>
+  </div>
+</div>
+<div class="content">
+  <div id="p-input" class="panel active">
+    <br>
+    <div class="alert" id="alert"></div>
+    <div class="card">
+      <div class="card-title">🍑 Data Buah Masuk ke Freezer</div>
+      <div class="fr">
+        <div class="fg">
+          <label>Nama Buah</label>
+          <select id="f-nama" onchange="toggleCustom()">
+            <option value="">-- Pilih --</option>
+            <option>Mangga</option><option>Stroberi</option><option>Jeruk</option>
+            <option>Semangka</option><option>Melon</option><option>Alpukat</option>
+            <option>Anggur</option><option>Nanas</option><option>Jambu</option>
+            <option>Pisang</option><option>Sirsak</option><option>Lainnya...</option>
+          </select>
+        </div>
+        <div class="fg" id="custom-wrap" style="display:none">
+          <label>Nama Lain</label>
+          <input type="text" id="f-custom" placeholder="Nama buah...">
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>Jumlah (kg)</label><input type="number" id="f-jumlah" placeholder="0.0" min="0.1" step="0.5" inputmode="decimal"></div>
+        <div class="fg"><label>Kondisi</label>
+          <select id="f-kondisi"><option>Segar → Freezer</option><option>Sudah beku</option><option>Perlu dicek</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>📅 Tgl Masuk</label><input type="date" id="f-masuk"></div>
+        <div class="fg"><label>⚠️ Tgl Kadaluarsa</label><input type="date" id="f-exp"></div>
+      </div>
+      <div class="fg"><label>Catatan (opsional)</label><input type="text" id="f-catatan" placeholder="Supplier, asal buah, dll..."></div>
+      <button class="btn-save" onclick="simpan()">💾 Simpan ke Stok Freezer</button>
+    </div>
+  </div>
+  <div id="p-stok" class="panel">
+    <br>
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="s-tot">0</div><div class="stat-l">Total</div></div>
+      <div class="stat"><div class="stat-n g" id="s-ok">0</div><div class="stat-l">Aman</div></div>
+      <div class="stat"><div class="stat-n a" id="s-warn">0</div><div class="stat-l">≤3 hari</div></div>
+      <div class="stat"><div class="stat-n r" id="s-exp">0</div><div class="stat-l">Expired</div></div>
+    </div>
+    <div class="search-row">
+      <input type="search" id="search" placeholder="🔍 Cari nama buah..." oninput="renderList()">
+      <select id="ff" onchange="renderList()"><option value="">Semua</option><option value="r">Expired</option><option value="a">Hampir</option><option value="g">Aman</option></select>
+    </div>
+    <div id="list"></div>
+  </div>
+  <div id="p-ekspor" class="panel">
+    <br>
+    <div class="install-card">
+      <h3>📲 Cara Install di HP Android</h3>
+      <p>1. Buka link aplikasi ini di Chrome Android<br>2. Ketuk ⋮ (titik tiga) pojok kanan atas<br>3. Pilih <strong>"Tambahkan ke layar utama"</strong><br>4. Ketuk <strong>"Tambah"</strong> — selesai! 🎉<br><br>Bisa dipakai <strong>tanpa internet</strong> setelah diinstall.</p>
+    </div>
+    <div class="exp-card">
+      <h3>📊 Ekspor Data ke CSV</h3>
+      <p>Download semua data stok buah sebagai file CSV untuk dibuka di Excel atau Google Sheets.</p>
+      <button class="btn-exp" onclick="eksporCSV()">⬇️ Download File CSV</button>
+    </div>
+    <div class="exp-card">
+      <h3>🗑️ Hapus Semua Data</h3>
+      <p>Hapus seluruh data stok. <strong>Tidak bisa dikembalikan.</strong></p>
+      <button class="btn-exp red" onclick="konfirmHapusSemua()">🗑️ Hapus Semua Data</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay" onclick="tutupModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 id="m-title">Hapus?</h3>
+    <p id="m-body">Data ini akan dihapus.</p>
+    <div class="modal-btns">
+      <button onclick="tutupModal()">Batal</button>
+      <button class="mbr" id="m-ok">Hapus</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-banner').classList.add('show');});
+window.addEventListener('appinstalled',()=>{document.getElementById('install-banner').classList.remove('show');toast('✅ Aplikasi berhasil diinstall!');});
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}}
+let stok=[];
+function load(){try{stok=JSON.parse(localStorage.getItem('stokBuahJus')||'[]');}catch(e){stok=[];}}
+function save(){localStorage.setItem('stokBuahJus',JSON.stringify(stok));}
+function status(exp){
+  const e=new Date(exp);e.setHours(0,0,0,0);
+  const n=new Date();n.setHours(0,0,0,0);
+  const d=Math.round((e-n)/86400000);
+  if(d<0) return{c:'r',bc:'br',lbl:'⛔ KADALUARSA',txt:`Sudah lewat ${Math.abs(d)} hari`,d};
+  if(d===0) return{c:'r',bc:'br',lbl:'⛔ HARI INI!',txt:'Kadaluarsa HARI INI',d};
+  if(d<=3) return{c:'a',bc:'ba',lbl:`⚠️ ${d} hari lagi`,txt:`Sisa ${d} hari`,d};
+  return{c:'g',bc:'bg',lbl:'✅ Aman',txt:`Sisa ${d} hari`,d};
+}
+function fmt(dt){if(!dt)return'-';const[y,m,d]=dt.split('-');return`${d}/${m}/${y}`;}
+function renderList(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const ff=document.getElementById('ff').value;
+  let rows=stok.filter(i=>{const s=status(i.kadaluarsa);return i.nama.toLowerCase().includes(q)&&(!ff||s.c===ff);}).sort((a,b)=>status(a.kadaluarsa).d-status(b.kadaluarsa).d);
+  const el=document.getElementById('list');
+  if(!rows.length){el.innerHTML=`<div class="empty"><div class="empty-ico">🧊</div><p>${!stok.length?'Belum ada stok buah.<br>Tambah buah di tab <b>Input</b>.':'Tidak ada yang cocok.'}</p></div>`;}
+  else{el.innerHTML=rows.map(item=>{const s=status(item.kadaluarsa);return`<div class="item ${s.c}"><button class="del" onclick="konfirmHapus('${item.id}')">✕</button><div class="item-top"><div><div class="item-nama">${item.nama}</div><div class="item-sub">🧊 ${item.jumlah} kg · ${item.kondisi}</div></div><span class="badge ${s.bc}">${s.lbl}</span></div><div class="item-sisa ${s.c}">${s.txt}</div><div class="item-dates"><span>📥 Masuk: <strong>${fmt(item.masuk)}</strong></span><span>📅 Exp: <strong>${fmt(item.kadaluarsa)}</strong></span></div>${item.catatan?`<div class="item-note">📝 ${item.catatan}</div>`:''}</div>`;}).join('');}
+  document.getElementById('s-tot').textContent=stok.length;
+  document.getElementById('s-ok').textContent=stok.filter(i=>status(i.kadaluarsa).c==='g').length;
+  document.getElementById('s-warn').textContent=stok.filter(i=>status(i.kadaluarsa).c==='a').length;
+  document.getElementById('s-exp').textContent=stok.filter(i=>status(i.kadaluarsa).c==='r').length;
+}
+function checkAlert(){
+  const r=stok.filter(i=>status(i.kadaluarsa).c==='r').length;
+  const a=stok.filter(i=>status(i.kadaluarsa).c==='a').length;
+  const el=document.getElementById('alert');
+  const dot=document.getElementById('notif-dot');
+  if(r||a){let msg='';if(r)msg+=`⛔ ${r} buah sudah kadaluarsa! `;if(a)msg+=`⚠️ ${a} buah hampir kadaluarsa (≤3 hari).`;el.textContent=msg;el.classList.add('show');dot.classList.add('show');}
+  else{el.classList.remove('show');dot.classList.remove('show');}
+}
+function simpan(){
+  let nama=document.getElementById('f-nama').value;
+  if(nama==='Lainnya...') nama=document.getElementById('f-custom').value.trim();
+  const jumlah=document.getElementById('f-jumlah').value;
+  const masuk=document.getElementById('f-masuk').value;
+  const exp=document.getElementById('f-exp').value;
+  const kondisi=document.getElementById('f-kondisi').value;
+  const catatan=document.getElementById('f-catatan').value.trim();
+  if(!nama){toast('Pilih nama buah dulu!');return;}
+  if(!jumlah||parseFloat(jumlah)<=0){toast('Isi jumlah buah (kg)!');return;}
+  if(!masuk){toast('Isi tanggal masuk!');return;}
+  if(!exp){toast('Isi tanggal kadaluarsa!');return;}
+  if(new Date(exp)<new Date(masuk)){toast('Kadaluarsa harus setelah tanggal masuk!');return;}
+  stok.unshift({id:Date.now().toString(),nama,jumlah:parseFloat(jumlah),masuk,kadaluarsa:exp,kondisi,catatan});
+  save();resetForm();checkAlert();toast('✅ '+nama+' berhasil disimpan!');
+}
+function resetForm(){
+  document.getElementById('f-nama').value='';document.getElementById('f-custom').value='';
+  document.getElementById('f-jumlah').value='';document.getElementById('f-kondisi').value='Segar → Freezer';
+  document.getElementById('f-catatan').value='';document.getElementById('custom-wrap').style.display='none';
+  const t=new Date().toISOString().split('T')[0];document.getElementById('f-masuk').value=t;
+  const e=new Date();e.setDate(e.getDate()+7);document.getElementById('f-exp').value=e.toISOString().split('T')[0];
+}
+function toggleCustom(){document.getElementById('custom-wrap').style.display=document.getElementById('f-nama').value==='Lainnya...'?'flex':'none';}
+let hapusId=null,hapusMode='';
+function konfirmHapus(id){hapusId=id;hapusMode='satu';const item=stok.find(i=>i.id===id);document.getElementById('m-title').textContent='🗑️ Hapus '+(item?item.nama:'buah')+'?';document.getElementById('m-body').textContent='Data buah ini akan dihapus dari stok freezer.';document.getElementById('m-ok').onclick=eksekusiHapus;document.getElementById('overlay').classList.add('show');}
+function konfirmHapusSemua(){hapusMode='semua';document.getElementById('m-title').textContent='🗑️ Hapus semua data?';document.getElementById('m-body').textContent='Seluruh '+stok.length+' data stok buah akan dihapus permanen.';document.getElementById('m-ok').onclick=eksekusiHapus;document.getElementById('overlay').classList.add('show');}
+function eksekusiHapus(){if(hapusMode==='satu')stok=stok.filter(i=>i.id!==hapusId);else stok=[];save();renderList();checkAlert();tutupModal();toast(hapusMode==='satu'?'Data dihapus':'Semua data dihapus');}
+function tutupModal(){document.getElementById('overlay').classList.remove('show');}
+function eksporCSV(){
+  if(!stok.length){toast('Belum ada data!');return;}
+  const h=['Nama Buah','Jumlah (kg)','Kondisi','Tgl Masuk','Tgl Kadaluarsa','Status','Catatan'];
+  const rows=stok.map(i=>{const s=status(i.kadaluarsa);return[i.nama,i.jumlah,i.kondisi,fmt(i.masuk),fmt(i.kadaluarsa),s.txt.replace(/[^a-zA-Z0-9 ]/g,'').trim(),i.catatan||''].map(v=>`"${v}"`).join(',');});
+  const csv='\uFEFF'+[h.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`stok-buah-${new Date().toISOString().split('T')[0]}.csv`;a.click();toast('✅ File CSV berhasil didownload!');
+}
+function switchTab(name){
+  const map={input:'p-input',stok:'p-stok',ekspor:'p-ekspor'};
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['input','stok','ekspor'][i]===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(map[name]).classList.add('active');
+  if(name==='stok')renderList();
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+load();resetForm();checkAlert();
+</script>
+</body>
+  </html>
